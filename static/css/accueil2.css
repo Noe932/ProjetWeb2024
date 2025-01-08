@@ -1,0 +1,292 @@
+/* Reset et styles de base */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: #1a1a1a;
+    color: #fff;
+}
+
+/* En-tête */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background: #2c2c2c;
+}
+
+.header .logo {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #00FF7F;
+}
+
+.nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 15px;
+}
+
+.nav ul li {
+    display: inline;
+}
+
+.nav ul li a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 1em;
+    transition: color 0.3s;
+}
+
+.nav ul li a:hover {
+    color: #00FF7F;
+}
+
+.logout {
+    color: #ff4d4d;
+}
+
+/* Wrapper et Sidebar */
+#wrapper {
+    display: flex;
+    height: 100vh;
+}
+
+#sidebar-wrapper {
+    width: 250px;
+    background: linear-gradient(180deg, #0F0F0F, #0F0F0F);
+    color: white;
+    position: fixed;
+    height: 100%;
+    padding-top: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    overflow-y: auto; /* Allows scrolling within the sidebar */
+    position: sticky; /* Makes the sidebar stick to the page */
+    top: 0; 
+}
+
+#sidebar-wrapper ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#sidebar-wrapper ul li {
+    padding: 10px;
+}
+
+#sidebar-wrapper ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    display: block;
+}
+
+#sidebar-wrapper ul li a:hover {
+    background-color: #444;
+}
+
+.sub-menu {
+    list-style-type: none;
+    padding-left: 20px;
+}
+
+.sub-menu li a {
+    color: #ddd;
+}
+
+.sub-menu li a:hover {
+    background-color: #555;
+}
+
+/* Contenu de la page */
+#page-content-wrapper {
+    margin-left: 100px;
+    padding: 20px;
+    flex: 1;
+}
+
+/* Section principale */
+.main {
+    padding: 30px;
+    text-align: center;
+}
+
+.welcome-section h1 {
+    font-size: 2.5em;
+    color: #00FF7F;
+}
+
+/* Home Main Content Layout */
+.home-main-content {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 30px;
+    background: #1a1a1a;
+}
+
+.team-section, 
+.tactics-section {
+    flex: 1;
+    background: #2c2c2c;
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    transition: transform 0.3s ease;
+}
+
+.team-section:hover,
+.tactics-section:hover {
+    transform: scale(1.02);
+}
+
+.team-title,
+.tactics-title {
+    color: #00FF7F;
+    margin-bottom: 20px;
+    font-size: 1.8em;
+}
+
+.team-actions,
+.tactics-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.team-btn,
+.tactics-btn {
+    display: inline-block;
+    padding: 12px 20px;
+    background: #00FF7F;
+    color: #1a1a1a;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.team-btn:hover,
+.tactics-btn:hover {
+    background: #007f3f;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,255,127,0.3);
+}
+
+.team-btn i,
+.tactics-btn i {
+    margin-right: 10px;
+}
+
+/* Sections de fonctionnalités */
+.features {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.feature {
+    background: #2c2c2c;
+    padding: 20px;
+    border-radius: 10px;
+    width: 250px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.feature h2 {
+    font-size: 1.5em;
+    color: #00FF7F;
+}
+
+.feature p {
+    font-size: 1em;
+    margin: 10px 0;
+}
+
+.feature .btn {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 15px;
+    background: #00FF7F;
+    color: #1a1a1a;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background 0.3s;
+}
+
+.feature .btn:hover {
+    background: #007f3f;
+}
+
+/* Liens rapides */
+.quick-links {
+    margin-top: 40px;
+}
+
+.quick-links ul {
+    list-style: none;
+    padding: 0;
+}
+
+.quick-links ul li {
+    margin: 10px 0;
+}
+
+.quick-links ul li a {
+    color: #00FF7F;
+    text-decoration: none;
+}
+
+.quick-links ul li a:hover {
+    text-decoration: underline;
+}
+
+/* Pied de page */
+.footer {
+    background: #2c2c2c;
+    padding: 15px 0;
+    text-align: center;
+    font-size: 0.9em;
+    color: #868686;
+}
+
+.footer a {
+    color: #00FF7F;
+    text-decoration: none;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
+
+/* Icônes de la sidebar */
+.fa-stack {
+    margin-right: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    #wrapper {
+        flex-direction: column;
+    }
+
+    #sidebar-wrapper {
+        width: 100%;
+        position: static;
+    }
+
+    #page-content-wrapper {
+        margin-left: 0;
+    }
+
+    .home-main-content {
+        flex-direction: column;
+    }
+}

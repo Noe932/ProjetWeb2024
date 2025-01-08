@@ -22,8 +22,15 @@ from App1 import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('App1/', views.index, name='index'),
-
-    path('terrain/', views.football_view, name='football'),
     path('liste-joueurs/', views.liste_joueurs, name='liste_joueurs'),
+    path('creer-compte/', views.creer_compte, name='creer_compte'),
+    path('connexion/', views.connexion, name='connexion'),
+
+    path('acceuil/',views.accueil,name='accueil'),
+
+    path('joueur/', views.joueur, name='joueur'),
+
+    path('tactique/', views.tactique, name='tactique'),
 
 ]
+

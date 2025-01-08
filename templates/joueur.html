@@ -1,0 +1,132 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un Joueur - Tactiques Pro Foot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href={% static 'css/joueur.css' %}>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            Tactiques Pro Foot
+        </div>
+        <nav class="nav">
+            <ul>
+                <li><a href="#">Profil</a></li>
+                <li><a href="#" class="logout">Déconnexion</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div id="wrapper">
+        <div id="sidebar-wrapper">
+            <ul>
+                <li><a href={% url 'accueil' %}><i class="fas fa-home"></i> Accueil</a></li>
+                <li>
+                    <a href="#"><i class="fas fa-users"></i> Equipe</a>
+                    <ul class="sub-menu">
+                        <li><a href="{% url 'joueur' %}"><i class="fas fa-user-plus"></i> Créer joueur</a></li>
+                        <li><a href="{% url 'liste_joueurs' %}"><i class="fas fa-list"></i> Liste joueurs</a></li>
+                    </ul>
+                </li>
+                <li><a href="{% url 'tactique' %}"><i class="fas fa-chart-line"></i> Tactique</a></li>
+                <li><a href="#"><i class="fas fa-envelope"></i> Contact</a></li>
+               
+            </ul>
+        </div>
+
+        <div id="page-content-wrapper">
+            <div class="create-player-container">
+                <div class="player-form-header">
+                    <h1>📋 Créer un Nouveau Joueur</h1>
+                    <p>Ajoutez un nouveau talent à votre équipe !</p>
+                </div>
+
+                <form id="playerForm" class="player-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName"><i class="fas fa-user"></i> Prénom</label>
+                            <input type="text" id="firstName" name="firstName" required placeholder="Entrez le prénom du joueur">
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName"><i class="fas fa-user"></i> Nom</label>
+                            <input type="text" id="lastName" name="lastName" required placeholder="Entrez le nom du joueur">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="age"><i class="fas fa-birthday-cake"></i> Âge</label>
+                            <input type="number" id="age" name="age" required min="16" max="45" placeholder="Âge du joueur">
+                        </div>
+                        <div class="form-group">
+                            <label for="position"><i class="fas fa-chess-pawn"></i> Position</label>
+                            <select id="position" name="position" required>
+                                <option value="">Sélectionnez une position</option>
+                                <option value="gardien">Gardien</option>
+                                <option value="defenseur">Défenseur</option>
+                                <option value="milieu">Milieu</option>
+                                <option value="attaquant">Attaquant</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="performance-section">
+                        <h3><i class="fas fa-chart-line"></i> Performances (Optionnel)</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="matchesPlayed"><i class="fas fa-futbol"></i> Nombre de Matchs</label>
+                                <input type="number" id="matchesPlayed" name="matchesPlayed" min="0" placeholder="Nombre de matchs joués">
+                            </div>
+                            <div class="form-group">
+                                <label for="goals"><i class="fas fa-trophy"></i> Buts</label>
+                                <input type="number" id="goals" name="goals" min="0" placeholder="Nombre de buts marqués">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="assists"><i class="fas fa-handshake"></i> Passes Décisives</label>
+                                <input type="number" id="assists" name="assists" min="0" placeholder="Nombre de passes décisives">
+                            </div>
+                        </div>
+                        <p class="optional-note">
+                            <i class="fas fa-info-circle"></i> Ces informations sont facultatives. Vous pouvez les ajouter ultérieurement.
+                        </p>
+                    </div>
+
+                    <div class="additional-info">
+                        <div class="form-group full-width">
+                            <label for="notes"><i class="fas fa-pencil-alt"></i> Notes supplémentaires</label>
+                            <textarea id="notes" name="notes" placeholder="Informations complémentaires sur le joueur..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Enregistrer le Joueur
+                        </button>
+                        <button type="reset" class="btn btn-secondary">
+                            <i class="fas fa-redo"></i> Réinitialiser
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <footer class="footer">
+                <p>© 2024 Tactiques Pro Foot. Tous droits réservés.</p>
+                <p>
+                    <a href="#">Mentions légales</a> | 
+                    <a href="#">Politique de confidentialité</a>
+                </p>
+            </footer>
+        </div>
+    </div>
+
+    <script src="joueur.js"></script>
+</body>
+</html>

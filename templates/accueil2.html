@@ -1,0 +1,119 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tactiques Pro Foot</title>
+    <link rel="stylesheet" href={% static 'css/accueil2.css' %}>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            Tactiques Pro Foot
+        </div>
+        <nav class="nav">
+            <ul>
+                <li><a href="#">Profil</a></li>
+                <li><a href="#" class="logout">Déconnexion</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div id="wrapper">
+        <div id="sidebar-wrapper">
+            <ul>
+                <li><a href="{% url 'accueil' %}"><i class="fas fa-home"></i> Accueil</a></li>
+                <li>
+                    <a href="#"><i class="fas fa-users"></i> Equipe</a>
+                    <ul class="sub-menu">
+                        <li><a href="{% url 'joueur' %}"><i class="fas fa-user-plus"></i> Créer joueur</a></li>
+                        <li><a href={% url 'liste_joueurs' %}><i class="fas fa-list"></i> Liste joueurs</a></li>
+                    </ul>
+                </li>
+                <li><a href="{% url 'tactique' %}"><i class="fas fa-chart-line"></i> Tactique</a></li>
+                <li><a href="#"><i class="fas fa-envelope"></i> Contact</a></li>
+                
+            </ul>
+        </div>
+
+        <div id="page-content-wrapper">
+            <div class="main" role="main">
+                <section class="welcome-section">
+                    <h1>Bienvenue, [Nom de l'utilisateur] !</h1>
+                    <p>Prêt à perfectionner vos stratégies et à mener votre équipe à la victoire ?</p>
+                </section>
+
+                <div class="home-main-content">
+                    <div class="team-section">
+                        <div class="team-info">
+                            <h2 class="team-title">📋 Mon Équipe</h2>
+                            <div class="team-actions">
+                                <a href={% url 'liste_joueurs' %} class="btn team-btn">
+                                    <i class="fas fa-list"></i> Liste des Joueurs
+                                </a>
+                                <a href="{% url 'joueur' %}" class="btn team-btn">
+                                    <i class="fas fa-user-plus"></i> Créer un Joueur
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tactics-section">
+                        <div class="tactics-info">
+                            <h2 class="tactics-title">🏆 Créer une Tactique</h2>
+                            <div class="tactics-actions">
+                                <a href={% url 'tactique' %} class="btn tactics-btn">
+                                    <i class="fas fa-chess-board"></i> Définir une Formation
+                                </a>
+                                <a href="#" class="btn tactics-btn">
+                                    <i class="fas fa-futbol"></i> Analyser Stratégie
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <section class="features">
+                    <div class="feature">
+                        <h2>Créez une Tactique</h2>
+                        <p>Planifiez vos formations et stratégies, choisissez vos joueurs clés.</p>
+                        <a href="{% url 'tactique' %}" class="btn">Commencer</a>
+                    </div>
+                    <div class="feature">
+                        <h2>Analyse Vidéo</h2>
+                        <p>Analysez des matchs pour optimiser vos tactiques et améliorer vos performances.</p>
+                        <a href="#video-analysis" class="btn">En savoir plus</a>
+                    </div>
+                    <div class="feature">
+                        <h2>Statistiques et Performances</h2>
+                        <p>Suivez les performances de vos joueurs avec des données en temps réel.</p>
+                        <a href="#statistics" class="btn">Explorer</a>
+                    </div>
+                </section>
+
+                <section class="quick-links">
+                    <h2>Accès Rapide</h2>
+                    <ul>
+                        <li><a href="#formation">Ma Formation Préférée</a></li>
+                        <li><a href="#recent-matches">Matchs Récents</a></li>
+                        <li><a href="#shared-tactics">Tactiques Partagées</a></li>
+                    </ul>
+                </section>
+            </div>
+
+            <footer class="footer">
+                <p>© 2024 Tactiques Pro Foot. Tous droits réservés.</p>
+                <p>
+                    <a href="#">Mentions légales</a> | 
+                    <a href="#">Politique de confidentialité</a>
+                </p>
+            </footer>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+</body>
+</html>

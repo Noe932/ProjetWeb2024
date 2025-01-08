@@ -1,0 +1,52 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer compte - Équipe de Football</title>
+    <link rel="stylesheet" href={% static 'css/connexion.css' %}>
+</head>
+<body>
+
+  <div id="form-ui">
+    <form action="" method="post" id="form">
+      <div id="form-body">
+        <div id="welcome-lines">
+          <div id="welcome-line-1">FootTactique</div>
+          <div id="welcome-line-2">Créer votre compte</div>
+        </div>
+        <div id="input-area">
+            <div class="form-inp">
+                <input placeholder="Prenom" type="text">
+              </div>
+              <div class="form-inp">
+                <input placeholder="Nom" type="text">
+              </div>
+
+              <div class="form-inp">
+                <input placeholder="Age" type="int">
+              </div>
+          
+             <div class="form-inp">
+                <input placeholder="Password" type="password">
+            </div>
+        </div>
+        <div id="submit-button-cvr">
+          <button id="submit-button" type="submit">Créer</button>
+        </div>
+        <div id="forgot-pass">
+            <a href="{% url 'connexion' %}">Connexion</a>
+          </div>
+      </div>
+    </form>
+    </div>
+  
+
+  
+
+
+    <script src="{% static 'js/connexion.js' %}"></script>
+</body>
+</html>

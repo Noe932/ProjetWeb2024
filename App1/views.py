@@ -11,3 +11,18 @@ def liste_joueurs(request):
     # Récupérer tous les joueurs avec leurs rôles et postes
     joueurs = Joueur.objects.select_related('refrole', 'refposte')  # Optimisation pour inclure les relations
     return render(request, 'listeJoueur.html', {'joueurs': joueurs})
+
+def creer_compte(request):
+    return render(request, 'creercompte.html')
+
+def connexion(request):
+    return render(request, 'connexion2.html')
+
+def accueil(request):
+    return render(request, 'accueil2.html')
+
+def joueur(request):
+    return render(request, 'joueur.html')
+
+def tactique(request):
+    return render(request, 'tactique.html')
