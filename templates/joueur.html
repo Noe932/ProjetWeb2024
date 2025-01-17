@@ -1,6 +1,5 @@
 {% load static %}
 
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -36,7 +35,6 @@
                 </li>
                 <li><a href="{% url 'tactique' %}"><i class="fas fa-chart-line"></i> Tactique</a></li>
                 <li><a href="#"><i class="fas fa-envelope"></i> Contact</a></li>
-               
             </ul>
         </div>
 
@@ -47,7 +45,8 @@
                     <p>Ajoutez un nouveau talent à votre équipe !</p>
                 </div>
 
-                <form id="playerForm" class="player-form">
+                <form id="playerForm" class="player-form" method="POST">
+                    {% csrf_token %}
                     <div class="form-row">
                         <div class="form-group">
                             <label for="firstName"><i class="fas fa-user"></i> Prénom</label>
@@ -68,10 +67,9 @@
                             <label for="position"><i class="fas fa-chess-pawn"></i> Position</label>
                             <select id="position" name="position" required>
                                 <option value="">Sélectionnez une position</option>
-                                <option value="gardien">Gardien</option>
-                                <option value="defenseur">Défenseur</option>
-                                <option value="milieu">Milieu</option>
-                                <option value="attaquant">Attaquant</option>
+                                {% for poste in postes %}
+                                <option value="{{ poste.idposte }}">{{ poste.nomposte }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                     </div>

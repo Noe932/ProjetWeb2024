@@ -31,6 +31,8 @@ urlpatterns = [
     path('joueur/', views.joueur, name='joueur'),
 
     path('tactique/', views.tactique, name='tactique'),
+    path('save_tactique/', views.save_tactique, name='save_tactique'),
+    path('get_tactiques/', views.get_tactiques, name='get_tactiques'),
 
 ]
 
