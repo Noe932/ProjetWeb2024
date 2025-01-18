@@ -17,7 +17,7 @@
         <nav class="nav">
             <ul>
                 <li><a href="#">Profil</a></li>
-                <li><a href="#" class="logout">Déconnexion</a></li>
+                <li><a href="{% url 'logout' %}" class="logout">Déconnexion</a></li>
             </ul>
         </nav>
     </header>
@@ -42,7 +42,7 @@
         <div id="page-content-wrapper">
             <div class="main" role="main">
                 <section class="welcome-section">
-                    <h1>Bienvenue, [Nom de l'utilisateur] !</h1>
+                    <h1>Bienvenue, {{ coach.nomcoach }} {{ coach.prenomcoach }} !</h1>
                     <p>Prêt à perfectionner vos stratégies et à mener votre équipe à la victoire ?</p>
                 </section>
 

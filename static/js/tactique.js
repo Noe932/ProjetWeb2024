@@ -21,24 +21,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // Fonction pour récupérer les positions
-    function collectPositions() {
-        const elements = document.querySelectorAll('.draggable-container');
-        const positions = [];
+function collectPositions() {
+    const elements = document.querySelectorAll('.draggable-container');
+    const positions = [];
 
-        elements.forEach((element, index) => {
-            const joueurNom = element.querySelector('.main-button').textContent;
-            // Ne pas inclure les éléments avec le texte par défaut
-            if (joueurNom !== 'Afficher la Liste' && joueurNom !== 'Fermer') {
-                positions.push({
-                    joueur: joueurNom,
-                    x: parseFloat(element.style.left),
-                    y: parseFloat(element.style.top)
-                });
+    elements.forEach((element) => {
+        const joueurNom = element.querySelector('.player-name').textContent;
+        const roleButton = element.querySelector('.main-button');
+        
+        // Ne pas inclure les éléments par défaut
+        if (joueurNom && roleButton.textContent !== 'Afficher la Liste' && roleButton.textContent !== 'Fermer') {
+            // Enlever le "px" des positions et convertir en nombres
+            const x = parseFloat(element.style.left) || 0;
+            const y = parseFloat(element.style.top) || 0;
+
+            // Récupération du rôle sélectionné via le bouton principal
+            const selectedRole = roleButton.textContent.trim();
+            const selectedItem = items.find(item => item.name === selectedRole);
+            const roleId = selectedItem ? selectedItem.id : null;
+
+            if (!roleId) {
+                console.warn(`RoleId non trouvé pour le rôle: ${selectedRole}`);
             }
-        });
 
-        return positions;
-    }
+            positions.push({
+                joueur: joueurNom.trim(),
+                roleId: roleId,
+                x: x,
+                y: y
+            });
+        }
+    });
+
+    console.log("Positions collectées:", positions);
+    return positions;
+}
+
 
 saveButton.addEventListener('click', async () => {
     const tactiqueName = prompt("Nom de la tactique :");
@@ -99,31 +117,7 @@ function getCookie(name) {
     return cookieValue;
 }
 
-function collectPositions() {
-    const elements = document.querySelectorAll('.draggable-container');
-    const positions = [];
 
-    elements.forEach((element) => {
-        const joueurNom = element.querySelector('.player-name').textContent;
-        const roleButton = element.querySelector('.main-button');
-
-        // Ne pas inclure les éléments par défaut
-        if (joueurNom && roleButton.textContent !== 'Afficher la Liste' && roleButton.textContent !== 'Fermer') {
-            // Enlever le "px" des positions et convertir en nombres
-            const x = parseFloat(element.style.left) || 0;
-            const y = parseFloat(element.style.top) || 0;
-
-            positions.push({
-                joueur: joueurNom.trim(),
-                x: x,
-                y: y
-            });
-        }
-    });
-
-    console.log("Positions collectées:", positions);
-    return positions;
-}
 
     listeItems.forEach(item => {
         const createButton = document.createElement('button');
@@ -279,3 +273,112 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('container');
+    const template = document.getElementById('draggable-template');
+    const loadButton = document.getElementById('loadTactiqueButton');
+
+    loadButton.addEventListener('click', async () => {
+        try {
+            const response = await fetch('/get_tactiques/');
+            const data = await response.json();
+
+            // Logs de débogage
+            console.log('Status de la réponse:', response.status);
+            console.log('Response OK:', response.ok);
+            console.log('Données reçues:', data);
+            console.log('Nombre de tactiques:', data.tactiques ? data.tactiques.length : 'undefined');
+
+            if (response.ok && data.tactiques && data.tactiques.length > 0) {
+                const tactiquesList = data.tactiques.map(t =>
+                    `${t.nom} (${t.positions.length} joueurs)`
+                ).join('\n');
+
+                console.log('Liste des tactiques:', tactiquesList); // Debug log
+
+                const tactiqueNom = prompt(
+                    `Choisissez une tactique à charger:\n${tactiquesList}`
+                );
+
+                if (tactiqueNom) {
+                    const tactique = data.tactiques.find(t => t.nom === tactiqueNom);
+                    console.log('Tactique sélectionnée:', tactique); // Debug log
+
+                    if (tactique) {
+                        // Nettoyer les positions existantes
+                        const existingPositions = container.querySelectorAll('.draggable-container');
+                        existingPositions.forEach(el => el.remove());
+
+                        // Charger les nouvelles positions
+                        tactique.positions.forEach(pos => {
+                            console.log('Position en cours de traitement:', pos); // Debug log
+
+                            const draggableElement = template.content.cloneNode(true).firstElementChild;
+                            const playerNameElement = draggableElement.querySelector('.player-name');
+                            playerNameElement.textContent = pos.joueur;
+
+                            draggableElement.style.left = `${pos.x}px`;
+                            draggableElement.style.top = `${pos.y}px`;
+
+                            const mainButton = draggableElement.querySelector('.main-button');
+                            const listContainer = draggableElement.querySelector('.list-container');
+
+                            mainButton.textContent = 'Afficher la Liste';
+                            let isListVisible = false;
+
+                            mainButton.addEventListener('click', () => {
+                                if (!isListVisible) {
+                                    listContainer.innerHTML = items.map(listItem => `
+                                        <div class="list-item" data-name="${listItem.name}" data-id="${listItem.id}">
+                                            ${listItem.name}
+                                            <div class="hover-card">
+                                                <h4>${listItem.name}</h4>
+                                                <p>${listItem.description}</p>
+                                            </div>
+                                        </div>
+                                    `).join('');
+                                    listContainer.style.display = 'block';
+                                    isListVisible = true;
+                                    mainButton.textContent = 'Fermer';
+
+                                    const listItems = listContainer.querySelectorAll('.list-item');
+                                    listItems.forEach(listItem => {
+                                        listItem.addEventListener('click', () => {
+                                            const selectedName = listItem.dataset.name;
+                                            mainButton.textContent = selectedName;
+                                            listContainer.style.display = 'none';
+                                            isListVisible = false;
+                                        });
+                                    });
+                                } else {
+                                    listContainer.style.display = 'none';
+                                    isListVisible = false;
+                                }
+                            });
+
+                            // Présélectionner le rôle correspondant
+                            const roleItem = items.find(item => item.id === pos.roleId);
+                            console.log('Role trouvé:', roleItem); // Debug log
+                            if (roleItem) {
+                                mainButton.textContent = roleItem.name;
+                            }
+
+                            draggableElement.addEventListener('mousedown', dragElement);
+                            container.appendChild(draggableElement);
+                        });
+                    }
+                }
+            } else {
+                console.log('Condition non remplie:');
+                console.log('- response.ok:', response.ok);
+                console.log('- data.tactiques existe:', !!data.tactiques);
+                console.log('- data.tactiques length:', data.tactiques ? data.tactiques.length : 'N/A');
+                alert('Aucune tactique disponible.');
+            }
+        } catch (error) {
+            console.error('Erreur complète:', error);
+            alert('Erreur lors du chargement des tactiques');
+        }
+    });
+});

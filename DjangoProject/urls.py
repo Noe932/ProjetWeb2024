@@ -24,8 +24,8 @@ urlpatterns = [
     path('App1/', views.index, name='index'),
     path('liste-joueurs/', views.liste_joueurs, name='liste_joueurs'),
     path('creer-compte/', views.creer_compte, name='creer_compte'),
+    path('logout/', views.logout_view, name='logout'),  # Utilisez un nom unique pour éviter le conflit
     path('connexion/', views.connexion, name='connexion'),
-
     path('acceuil/',views.accueil,name='accueil'),
 
     path('joueur/', views.joueur, name='joueur'),

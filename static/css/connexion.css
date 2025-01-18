@@ -155,4 +155,19 @@ html, body {
   #bar:after {
     right: -38px;
   }
-  
+
+  /* Messages container */
+.messages {
+    margin-top: 10px; /* Espacement par rapport au texte "Connectez-vous" */
+    margin-bottom: 20px; /* Espacement par rapport aux champs de saisie */
+}
+
+/* Style pour chaque message */
+.message {
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 14px;
+    color: red; /* Couleur du texte */
+    margin-bottom: 10px; /* Espacement entre plusieurs messages */
+}
+

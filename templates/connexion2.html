@@ -12,18 +12,29 @@
 
   <div id="form-ui">
     <form action="" method="post" id="form">
+        
+            {% csrf_token %}
       <div id="form-body">
         <div id="welcome-lines">
           <div id="welcome-line-1">FootTactique</div>
           <div id="welcome-line-2">Connectez vous</div>
         </div>
+          {% if messages %}
+  <div class="messages">
+    {% for message in messages %}
+      <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
         <div id="input-area">
-          <div class="form-inp">
-            <input placeholder="Nom" type="text">
-          </div>
-          <div class="form-inp">
-            <input placeholder="Password" type="password">
-          </div>
+        <div class="form-inp">
+    <input placeholder="Nom d'utilisateur" type="text" name="username" required>
+</div>
+<div class="form-inp">
+    <input placeholder="Mot de passe" type="password" name="password" required>
+</div>
         </div>
         <div id="submit-button-cvr">
           <button id="submit-button" type="submit">Connexion</button>

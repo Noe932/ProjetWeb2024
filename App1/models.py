@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.hashers import make_password, check_password
 
 class Equipe(models.Model):
     idequipe = models.AutoField(db_column='IDEquipe', primary_key=True)  # Field name made lowercase.
@@ -11,11 +12,18 @@ class Equipe(models.Model):
 
 
 class Coach(models.Model):
-    idcoach = models.AutoField(db_column='IDCoach', primary_key=True)  # Field name made lowercase.
-    nomcoach = models.TextField(db_column='NomCoach')  # Field name made lowercase.
-    prenomcoach = models.TextField(db_column='PrenomCoach')  # Field name made lowercase.
-    agecoach = models.IntegerField(db_column='AgeCoach')  # Field name made lowercase.
-    motdepasse = models.TextField(db_column='MotDePasse')  # Field name made lowercase.
+    idcoach = models.AutoField(db_column='IDCoach', primary_key=True)
+    nomcoach = models.TextField(db_column='NomCoach')
+    prenomcoach = models.TextField(db_column='PrenomCoach')
+    agecoach = models.IntegerField(db_column='AgeCoach')
+    password = models.CharField(db_column='password', max_length=128)  # Utilisez CharField pour le mot de passe
+    username = models.CharField(db_column='username', max_length=128)
+
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
+
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.password)
     class Meta:
         managed = False
         db_table = 'coach'
@@ -78,6 +86,7 @@ class PositionJoueur(models.Model):
     refjoueur = models.ForeignKey(Joueur, models.DO_NOTHING, db_column='RefJoueur')  # Field name made lowercase.
     positionx = models.FloatField(db_column='PositionX')  # Field name made lowercase.
     positiony = models.FloatField(db_column='PositionY')  # Field name made lowercase.
+    refrole = models.ForeignKey(Role, models.DO_NOTHING, db_column='RefRole')
 
     class Meta:
         managed = False

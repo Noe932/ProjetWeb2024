@@ -1,13 +1,24 @@
 from django.shortcuts import render
 from django.shortcuts import HttpResponse
 from django.shortcuts import render, redirect
-from .models import Joueur, Poste, Role, Stats,Tactique, PositionJoueur,Equipe
+from .models import Joueur, Poste, Role, Stats,Tactique, PositionJoueur,Equipe,Coach
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 import json
-# Create your views here.
+from django.shortcuts import get_object_or_404
+from django.shortcuts import render, HttpResponse, redirect
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
+from django.contrib import messages
+from .models import Coach
+from .models import Joueur
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+from django.contrib.auth.hashers import make_password, check_password
+
+from django.contrib.auth.models import User
 
 def index(request):
     return HttpResponse("Hello, world. You're at the App1 index.")
@@ -18,14 +29,106 @@ def liste_joueurs(request):
     return render(request, 'listeJoueur.html', {'joueurs': joueurs})
 
 def creer_compte(request):
-    return render(request, 'creercompte.html')
+    if request.method == "POST":
+        # Récupérer les champs du formulaire
+        username = request.POST.get("username", "").strip()
+        nom = request.POST.get("nom", "").strip()
+        prenom = request.POST.get("prenom", "").strip()
+        age = request.POST.get("age", "").strip()
+        password = request.POST.get("password", "").strip()
 
+        # Validation des champs côté serveur
+        errors = []
+        if not username:
+            errors.append("Le nom d'utilisateur est obligatoire.")
+        if not nom:
+            errors.append("Le champ 'Nom' est obligatoire.")
+        if not prenom:
+            errors.append("Le champ 'Prénom' est obligatoire.")
+        if not age or not age.isdigit() or int(age) < 0:
+            errors.append("L'âge doit être un nombre positif.")
+        if not password or len(password) < 6:
+            errors.append("Le mot de passe doit contenir au moins 6 caractères.")
+
+        if errors:
+            return render(request, "creercompte.html", {
+                "errors": errors,
+                "username": username,
+                "nom": nom,
+                "prenom": prenom,
+                "age": age
+            })
+
+        # Vérifier si un utilisateur existe déjà avec ce username
+        if Coach.objects.filter(username=username).exists():
+            messages.error(request, "Ce nom d'utilisateur est déjà utilisé.")
+            return render(request, "creercompte.html", {
+                "nom": nom,
+                "prenom": prenom,
+                "age": age
+            })
+
+        # Créer un coach dans la base de données
+        coach = Coach.objects.create(
+            username=username,
+            nomcoach=nom,
+            prenomcoach=prenom,
+            agecoach=int(age),
+            password=password
+        )
+        coach.set_password(password)  # Hachage du mot de passe
+        coach.save()
+
+        messages.success(request, "Votre compte a été créé avec succès !")
+        return redirect("accueil")
+
+    return render(request, "creercompte.html")
+
+def logout_view(request):
+    logout(request)  # Déconnecte l'utilisateur
+    return redirect('connexion')  # Redirige vers la page de connexion
 def connexion(request):
-    return render(request, 'connexion2.html')
+    if request.method == "POST":
+        # Récupérer les données du formulaire
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "").strip()
 
+        # Vérification des champs
+        if not username or not password:
+            messages.error(request, "Veuillez remplir tous les champs.")
+            return render(request, "connexion2.html")
+
+        # Vérification des informations dans la base de données
+        try:
+            coach = Coach.objects.get(username=username)
+            if coach.check_password(password):  # Vérification du mot de passe haché
+                request.session['coach_id'] = coach.idcoach
+                request.session.modified = True
+                return redirect("accueil")
+            else:
+                messages.error(request, "Mot de passe incorrect.")
+        except Coach.DoesNotExist:
+            messages.error(request, "Nom d'utilisateur non trouvé.")
+
+    # Si l'utilisateur est déjà connecté, rediriger vers l'accueil
+    if 'coach_id' in request.session:
+        return redirect("accueil")
+
+    return render(request, "connexion2.html")
 def accueil(request):
-    return render(request, 'accueil2.html')
+    # Vérification si l'utilisateur est connecté
+    if 'coach_id' not in request.session:
+        return redirect("connexion")
 
+    # Récupérer l'utilisateur connecté (le coach)
+    coach_id = request.session['coach_id']
+    try:
+        coach = Coach.objects.get(idcoach=coach_id)  # Utiliser idcoach au lieu de id
+        return render(request, 'accueil2.html',{'coach': coach})
+    except Coach.DoesNotExist:
+        # Si le coach n'existe pas, déconnexion
+        del request.session['coach_id']
+        return redirect("connexion")
 def joueur(request):
     if request.method == 'POST':
         # Données obligatoires
@@ -85,12 +188,9 @@ def tactique(request):
             'full_name': f"{joueur.prenomjoueur} {joueur.nomjoueur}"
         })
 
-    items = [{'name': role.nomrole, 'description': role.descriptionrole} for role in roles]
+    items = [{'id': role.idrole, 'name': role.nomrole, 'description': role.descriptionrole} for role in roles]
     return render(request, 'tactique.html', {'joueurs_stats': joueurs_stats, 'items': items})
 
-# Dans views.py, modifiez la fonction save_tactique :
-@ensure_csrf_cookie
-@require_http_methods(["POST"])
 def save_tactique(request):
     try:
         data = json.loads(request.body)
@@ -130,14 +230,16 @@ def save_tactique(request):
                         Q(prenomjoueur__iexact=nom_complet) |
                         Q(nomjoueur__iexact=nom_complet)
                     ).first()
-
+                role_id = pos['roleId']
+                role_instance = get_object_or_404(Role, pk=role_id)
                 if joueur:
                     print(f"Joueur trouvé: {joueur.prenomjoueur} {joueur.nomjoueur}")
                     PositionJoueur.objects.create(
                         reftactique=tactique,
                         refjoueur=joueur,
                         positionx=float(pos['x']),
-                        positiony=float(pos['y'])
+                        positiony=float(pos['y']),
+                        refrole=role_instance
                     )
                 else:
                     print(f"Joueur non trouvé pour: {nom_complet}")
@@ -163,31 +265,27 @@ def save_tactique(request):
             'message': f'Erreur lors de la sauvegarde: {str(e)}'
         }, status=500)
 @require_http_methods(["GET"])
+@require_http_methods(["GET"])
 def get_tactiques(request):
     try:
         tactiques = Tactique.objects.all()
-
-        if not tactiques:
-            return JsonResponse({
-                'status': 'error',
-                'message': "Aucune tactique trouvée."
-            }, status=404)
-
         tactiques_data = []
+        print(f"Nombre de tactiques trouvées : {tactiques.count()}")
 
         for tactique in tactiques:
-            positions = PositionJoueur.objects.filter(tactique=tactique)
+            positions = PositionJoueur.objects.filter(reftactique=tactique)
             positions_data = []
 
-            for position in positions:
+            for pos in positions:
                 positions_data.append({
-                    'joueur': position.joueur.nom,
-                    'x': position.position_x,
-                    'y': position.position_y
+                    'joueur': f"{pos.refjoueur.prenomjoueur} {pos.refjoueur.nomjoueur}",
+                    'x': pos.positionx,
+                    'y': pos.positiony,
+                    'roleId':pos.refrole.idrole
                 })
 
             tactiques_data.append({
-                'id': tactique.id,
+                'id': tactique.idtactique,
                 'nom': tactique.nom,
                 'positions': positions_data
             })
@@ -200,5 +298,5 @@ def get_tactiques(request):
     except Exception as e:
         return JsonResponse({
             'status': 'error',
-            'message': f"Une erreur inattendue est survenue : {str(e)}"
+            'message': f"Erreur lors de la récupération des tactiques: {str(e)}"
         }, status=500)
