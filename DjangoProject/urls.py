@@ -33,6 +33,8 @@ urlpatterns = [
     path('tactique/', views.tactique, name='tactique'),
     path('save_tactique/', views.save_tactique, name='save_tactique'),
     path('get_tactiques/', views.get_tactiques, name='get_tactiques'),
+    path('equipe/', views.creer_equipe, name='equipe'),
+    path('profil/', views.profil_view, name='profil'),
 
 ]
 

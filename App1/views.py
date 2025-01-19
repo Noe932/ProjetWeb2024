@@ -1,43 +1,66 @@
-from django.shortcuts import render
-from django.shortcuts import HttpResponse
 from django.shortcuts import render, redirect
-from .models import Joueur, Poste, Role, Stats,Tactique, PositionJoueur,Equipe,Coach
-from django.shortcuts import render
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
-import json
-from django.shortcuts import get_object_or_404
-from django.shortcuts import render, HttpResponse, redirect
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import login
 from django.contrib import messages
-from .models import Coach
-from .models import Joueur
 from django.contrib.auth import logout
-from django.shortcuts import redirect
 from django.contrib.auth.hashers import make_password, check_password
+from django.shortcuts import get_object_or_404
+from functools import wraps
+import json
+from .models import (
+    Joueur, Poste, Role, Stats, Tactique,
+    PositionJoueur, Equipe, Coach
+)
 
-from django.contrib.auth.models import User
 
-def index(request):
-    return HttpResponse("Hello, world. You're at the App1 index.")
+# Décorateur personnalisé pour vérifier l'authentification
+def login_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if 'coach_id' not in request.session:
+            messages.error(request, "Veuillez vous connecter pour accéder à cette page.")
+            return redirect('connexion')
+        return view_func(request, *args, **kwargs)
 
-def liste_joueurs(request):
-    # Récupérer tous les joueurs avec leurs rôles et postes
-    joueurs = Joueur.objects.select_related('refrole', 'refposte')  # Optimisation pour inclure les relations
-    return render(request, 'listeJoueur.html', {'joueurs': joueurs})
+    return wrapper
+
+
+# Vues d'authentification (non protégées)
+def connexion(request):
+    if request.method == "POST":
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "").strip()
+
+        if not username or not password:
+            messages.error(request, "Veuillez remplir tous les champs.")
+            return render(request, "connexion2.html")
+
+        try:
+            coach = Coach.objects.get(username=username)
+            if coach.check_password(password):
+                request.session['coach_id'] = coach.idcoach
+                request.session.modified = True
+                return redirect("accueil")
+            else:
+                messages.error(request, "Mot de passe incorrect.")
+        except Coach.DoesNotExist:
+            messages.error(request, "Nom d'utilisateur non trouvé.")
+
+    if 'coach_id' in request.session:
+        return redirect("accueil")
+
+    return render(request, "connexion2.html")
+
 
 def creer_compte(request):
     if request.method == "POST":
-        # Récupérer les champs du formulaire
         username = request.POST.get("username", "").strip()
         nom = request.POST.get("nom", "").strip()
         prenom = request.POST.get("prenom", "").strip()
         age = request.POST.get("age", "").strip()
         password = request.POST.get("password", "").strip()
 
-        # Validation des champs côté serveur
         errors = []
         if not username:
             errors.append("Le nom d'utilisateur est obligatoire.")
@@ -59,7 +82,6 @@ def creer_compte(request):
                 "age": age
             })
 
-        # Vérifier si un utilisateur existe déjà avec ce username
         if Coach.objects.filter(username=username).exists():
             messages.error(request, "Ce nom d'utilisateur est déjà utilisé.")
             return render(request, "creercompte.html", {
@@ -68,7 +90,6 @@ def creer_compte(request):
                 "age": age
             })
 
-        # Créer un coach dans la base de données
         coach = Coach.objects.create(
             username=username,
             nomcoach=nom,
@@ -76,72 +97,100 @@ def creer_compte(request):
             agecoach=int(age),
             password=password
         )
-        coach.set_password(password)  # Hachage du mot de passe
+        coach.set_password(password)
         coach.save()
 
-        messages.success(request, "Votre compte a été créé avec succès !")
-        return redirect("accueil")
+        request.session['coach_id'] = coach.idcoach
+        request.session.modified = True
+
+        messages.success(request, "Votre compte a été créé avec succès ! Créez maintenant votre équipe.")
+        return redirect("equipe")
 
     return render(request, "creercompte.html")
 
+
+# Vues protégées (nécessitant une authentification)
+@login_required
+def index(request):
+    return HttpResponse("Hello, world. You're at the App1 index.")
+
+
+@login_required
+def liste_joueurs(request):
+    joueurs = Joueur.objects.select_related('refrole', 'refposte')
+    return render(request, 'listeJoueur.html', {'joueurs': joueurs})
+
+
+@login_required
 def logout_view(request):
-    logout(request)  # Déconnecte l'utilisateur
-    return redirect('connexion')  # Redirige vers la page de connexion
-def connexion(request):
-    if request.method == "POST":
-        # Récupérer les données du formulaire
-        username = request.POST.get("username", "").strip()
-        password = request.POST.get("password", "").strip()
+    logout(request)
+    return redirect('connexion')
 
-        # Vérification des champs
-        if not username or not password:
-            messages.error(request, "Veuillez remplir tous les champs.")
-            return render(request, "connexion2.html")
 
-        # Vérification des informations dans la base de données
-        try:
-            coach = Coach.objects.get(username=username)
-            if coach.check_password(password):  # Vérification du mot de passe haché
-                request.session['coach_id'] = coach.idcoach
-                request.session.modified = True
-                return redirect("accueil")
-            else:
-                messages.error(request, "Mot de passe incorrect.")
-        except Coach.DoesNotExist:
-            messages.error(request, "Nom d'utilisateur non trouvé.")
-
-    # Si l'utilisateur est déjà connecté, rediriger vers l'accueil
-    if 'coach_id' in request.session:
-        return redirect("accueil")
-
-    return render(request, "connexion2.html")
-def accueil(request):
-    # Vérification si l'utilisateur est connecté
-    if 'coach_id' not in request.session:
-        return redirect("connexion")
-
-    # Récupérer l'utilisateur connecté (le coach)
-    coach_id = request.session['coach_id']
+@login_required
+def creer_equipe(request):
     try:
-        coach = Coach.objects.get(idcoach=coach_id)  # Utiliser idcoach au lieu de id
-        return render(request, 'accueil2.html',{'coach': coach})
+        coach = Coach.objects.get(idcoach=request.session['coach_id'])
+
+        try:
+            equipe_existante = Equipe.objects.get(refcoach=coach)
+            messages.warning(request, "Vous avez déjà une équipe.")
+            return redirect('accueil')
+        except Equipe.DoesNotExist:
+            pass
+
+        if request.method == 'POST':
+            nom_equipe = request.POST.get('nomequipe')
+
+            if nom_equipe:
+                try:
+                    equipe = Equipe(
+                        nomequipe=nom_equipe,
+                        refcoach=coach
+                    )
+                    equipe.save()
+                    messages.success(request, "Équipe créée avec succès!")
+                    return redirect('accueil')
+                except Exception as e:
+                    messages.error(request, f"Une erreur s'est produite lors de la création de l'équipe: {str(e)}")
+            else:
+                messages.error(request, "Veuillez fournir un nom d'équipe.")
+
+        return render(request, 'equipe.html', {'coach': coach})
+
     except Coach.DoesNotExist:
-        # Si le coach n'existe pas, déconnexion
+        messages.error(request, "Profil coach non trouvé.")
+        return redirect('connexion')
+
+
+@login_required
+def accueil(request):
+    try:
+        coach = Coach.objects.get(idcoach=request.session['coach_id'])
+
+        try:
+            equipe = Equipe.objects.get(refcoach=coach)
+        except Equipe.DoesNotExist:
+            messages.warning(request, "Vous devez d'abord créer votre équipe.")
+            return redirect('equipe')
+
+        return render(request, 'accueil2.html', {'coach': coach})
+    except Coach.DoesNotExist:
         del request.session['coach_id']
         return redirect("connexion")
+
+
+@login_required
 def joueur(request):
     if request.method == 'POST':
-        # Données obligatoires
         prenom = request.POST.get('firstName')
         nom = request.POST.get('lastName')
         age = request.POST.get('age')
         poste_id = request.POST.get('position')
 
-        # Récupérer le poste et le rôle par défaut
         poste = Poste.objects.get(idposte=poste_id)
-        role = Role.objects.get(idrole=1)  # Remplacez par l'ID du rôle par défaut
+        role = Role.objects.get(idrole=1)
 
-        # Créer le joueur
         joueur = Joueur.objects.create(
             prenomjoueur=prenom,
             nomjoueur=nom,
@@ -149,12 +198,10 @@ def joueur(request):
             refrole=role
         )
 
-        # Gérer les statistiques optionnelles
         nbmatchs = request.POST.get('matchesPlayed') or 0
         buts = request.POST.get('goals') or 0
         passes = request.POST.get('assists') or 0
 
-        # Vérifier si les statistiques sont remplies
         if nbmatchs or buts or passes:
             Stats.objects.create(
                 refjoueur=joueur,
@@ -163,19 +210,17 @@ def joueur(request):
                 passed=int(passes)
             )
 
-        return redirect('liste_joueurs')  # Redirige vers la liste des joueurs
+        return redirect('liste_joueurs')
 
     postes = Poste.objects.all()
     return render(request, 'joueur.html', {'postes': postes})
 
-from django.shortcuts import render
-from .models import Joueur, Stats, Role
 
+@login_required
 def tactique(request):
     joueurs = Joueur.objects.all()
     roles = Role.objects.all()
 
-    # Associer chaque joueur à ses statistiques
     joueurs_stats = []
     for joueur in joueurs:
         try:
@@ -191,6 +236,9 @@ def tactique(request):
     items = [{'id': role.idrole, 'name': role.nomrole, 'description': role.descriptionrole} for role in roles]
     return render(request, 'tactique.html', {'joueurs_stats': joueurs_stats, 'items': items})
 
+
+@login_required
+@require_http_methods(["POST"])
 def save_tactique(request):
     try:
         data = json.loads(request.body)
@@ -203,19 +251,16 @@ def save_tactique(request):
                 'message': 'Le nom de la tactique est requis.'
             }, status=400)
 
-        # Créer la tactique
-        equipe = Equipe.objects.first()  # À adapter selon votre logique
+        equipe = Equipe.objects.first()
         tactique = Tactique.objects.create(
             nom=nom_tactique,
             refequipe=equipe
         )
 
-        # Sauvegarder les positions
         for pos in positions:
             if not pos.get('joueur'):
                 continue
 
-            # Rechercher le joueur par nom complet
             nom_complet = pos['joueur'].strip()
             try:
                 if ' ' in nom_complet:
@@ -225,15 +270,14 @@ def save_tactique(request):
                         nomjoueur__iexact=nom
                     )
                 else:
-                    # Si un seul mot, chercher dans le prénom ou le nom
                     joueur = Joueur.objects.filter(
                         Q(prenomjoueur__iexact=nom_complet) |
                         Q(nomjoueur__iexact=nom_complet)
                     ).first()
-                role_id = pos['roleId']
-                role_instance = get_object_or_404(Role, pk=role_id)
+
                 if joueur:
-                    print(f"Joueur trouvé: {joueur.prenomjoueur} {joueur.nomjoueur}")
+                    role_id = pos['roleId']
+                    role_instance = get_object_or_404(Role, pk=role_id)
                     PositionJoueur.objects.create(
                         reftactique=tactique,
                         refjoueur=joueur,
@@ -241,14 +285,8 @@ def save_tactique(request):
                         positiony=float(pos['y']),
                         refrole=role_instance
                     )
-                else:
-                    print(f"Joueur non trouvé pour: {nom_complet}")
 
-            except Joueur.DoesNotExist:
-                print(f"Joueur non trouvé: {nom_complet}")
-                continue
             except Exception as e:
-                print(f"Erreur lors de la création de la position pour {nom_complet}:", str(e))
                 continue
 
         return JsonResponse({
@@ -258,19 +296,18 @@ def save_tactique(request):
         })
 
     except Exception as e:
-        import traceback
-        print("Erreur complète:", traceback.format_exc())
         return JsonResponse({
             'status': 'error',
             'message': f'Erreur lors de la sauvegarde: {str(e)}'
         }, status=500)
-@require_http_methods(["GET"])
+
+
+@login_required
 @require_http_methods(["GET"])
 def get_tactiques(request):
     try:
         tactiques = Tactique.objects.all()
         tactiques_data = []
-        print(f"Nombre de tactiques trouvées : {tactiques.count()}")
 
         for tactique in tactiques:
             positions = PositionJoueur.objects.filter(reftactique=tactique)
@@ -281,7 +318,7 @@ def get_tactiques(request):
                     'joueur': f"{pos.refjoueur.prenomjoueur} {pos.refjoueur.nomjoueur}",
                     'x': pos.positionx,
                     'y': pos.positiony,
-                    'roleId':pos.refrole.idrole
+                    'roleId': pos.refrole.idrole
                 })
 
             tactiques_data.append({
@@ -300,3 +337,22 @@ def get_tactiques(request):
             'status': 'error',
             'message': f"Erreur lors de la récupération des tactiques: {str(e)}"
         }, status=500)
+
+@login_required
+def profil_view(request):
+    if hasattr(request, 'session') and 'coach_id' in request.session:
+        coach_id = request.session['coach_id']
+        coach = Coach.objects.get(idcoach=coach_id)
+
+        # Récupérer le nombre de joueurs et de tactiques
+        equipe = Equipe.objects.filter(refcoach=coach).first()
+        nb_joueurs = Joueur.objects.filter(
+            positionjoueur__reftactique__refequipe=equipe).distinct().count() if equipe else 0
+        nb_tactiques = Tactique.objects.filter(refequipe=equipe).count() if equipe else 0
+
+        context = {
+            'coach': coach,
+            'nb_joueurs': nb_joueurs,
+            'nb_tactiques': nb_tactiques,
+        }
+        return render(request, 'profil.html', context)

@@ -65,7 +65,7 @@ body {
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
     overflow-y: auto; /* Allows scrolling within the sidebar */
     position: sticky; /* Makes the sidebar stick to the page */
-    top: 0; 
+    top: 0;
 }
 
 #sidebar-wrapper ul {
@@ -129,7 +129,7 @@ body {
     background: #1a1a1a;
 }
 
-.team-section, 
+.team-section,
 .tactics-section {
     flex: 1;
     background: #2c2c2c;

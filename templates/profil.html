@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil - Tactiques Pro Foot</title>
+    <link rel="stylesheet" href="{% static 'css/profil.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            Tactiques Pro Foot
+        </div>
+        <nav class="nav">
+            <ul>
+                <li><a href="{% url 'accueil' %}">Accueil</a></li>
+                <li><a href="{% url 'logout' %}" class="logout">Déconnexion</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="profile-container">
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <h1>{{ coach.prenomcoach }} {{ coach.nomcoach }}</h1>
+                <p class="profile-title">Coach</p>
+            </div>
+
+            <div class="profile-info">
+                <div class="info-section">
+                    <h2>Informations personnelles</h2>
+                    <div class="info-item">
+                        <i class="fas fa-user"></i>
+                        <div class="info-content">
+                            <label>Nom complet</label>
+                            <p>{{ coach.prenomcoach }} {{ coach.nomcoach }}</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <div class="info-content">
+                            <label>Âge</label>
+                            <p>{{ coach.agecoach }} ans</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-user-tag"></i>
+                        <div class="info-content">
+                            <label>Nom d'utilisateur</label>
+                            <p>{{ coach.username }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-section">
+                    <h2>Statistiques de l'équipe</h2>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <i class="fas fa-users"></i>
+                            <span class="stat-value">{{ nb_joueurs }}</span>
+                            <span class="stat-label">Joueurs</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-futbol"></i>
+                            <span class="stat-value">{{ nb_tactiques }}</span>
+                            <span class="stat-label">Tactiques</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

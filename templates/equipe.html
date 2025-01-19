@@ -1,0 +1,121 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer une Équipe - Tactiques Pro Foot</title>
+    <link rel="stylesheet" href={% static 'css/accueil2.css' %}>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        .create-team-form {
+            background: #2c2c2c;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            margin: 30px auto;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #00FF7F;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background: #1a1a1a;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .form-group input:focus {
+            outline: 2px solid #00FF7F;
+        }
+
+        .submit-btn {
+            background: #00FF7F;
+            color: #1a1a1a;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background: #007f3f;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,255,127,0.3);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            Tactiques Pro Foot
+        </div>
+        <nav class="nav">
+            <ul>
+                <li><a href="#">Profil</a></li>
+                <li><a href="{% url 'logout' %}" class="logout">Déconnexion</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div id="wrapper">
+        <div id="sidebar-wrapper">
+            <ul>
+                <li><a href="{% url 'accueil' %}"><i class="fas fa-home"></i> Accueil</a></li>
+                <li>
+                    <a href="#"><i class="fas fa-users"></i> Equipe</a>
+                    <ul class="sub-menu">
+                        <li><a href="{% url 'joueur' %}"><i class="fas fa-user-plus"></i> Créer joueur</a></li>
+                        <li><a href={% url 'liste_joueurs' %}><i class="fas fa-list"></i> Liste joueurs</a></li>
+                    </ul>
+                </li>
+                <li><a href="{% url 'tactique' %}"><i class="fas fa-chart-line"></i> Tactique</a></li>
+                <li><a href="#"><i class="fas fa-envelope"></i> Contact</a></li>
+            </ul>
+        </div>
+
+        <div id="page-content-wrapper">
+            <div class="main">
+                <section class="welcome-section">
+                    <h1>Créer une Nouvelle Équipe</h1>
+                    <p>Commencez votre voyage vers le succès en créant votre équipe</p>
+                </section>
+
+                <form class="create-team-form" method="POST" action="{% url 'equipe' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="team-name">Nom de l'équipe</label>
+                        <input type="text" id="team-name" name="nomequipe" required placeholder="Entrez le nom de votre équipe">
+                    </div>
+
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-plus"></i> Créer l'équipe
+                    </button>
+                </form>
+            </div>
+
+            
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+</body>
+</html>
