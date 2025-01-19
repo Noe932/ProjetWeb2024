@@ -5,7 +5,6 @@ class Equipe(models.Model):
     idequipe = models.AutoField(db_column='IDEquipe', primary_key=True)  # Field name made lowercase.
     nomequipe = models.TextField(db_column='NomEquipe')  # Field name made lowercase.
     refcoach = models.ForeignKey('Coach', models.DO_NOTHING, db_column='RefCoach')  # Field name made lowercase.
-
     class Meta:
         managed = False
         db_table = 'equipe'
@@ -30,11 +29,12 @@ class Coach(models.Model):
 
 
 class Joueur(models.Model):
-    idjoueur = models.AutoField(db_column='IDJoueur', primary_key=True)  # Field name made lowercase.
-    nomjoueur = models.TextField(db_column='NomJoueur')  # Field name made lowercase.
-    prenomjoueur = models.TextField(db_column='PrenomJoueur')  # Field name made lowercase.
-    refposte = models.ForeignKey('Poste', models.DO_NOTHING, db_column='refPoste')  # Field name made lowercase.
-    refrole = models.ForeignKey('Role', models.DO_NOTHING, db_column='refRole')  # Field name made lowercase.
+    idjoueur = models.AutoField(db_column='IDJoueur', primary_key=True)
+    nomjoueur = models.TextField(db_column='NomJoueur')
+    prenomjoueur = models.TextField(db_column='PrenomJoueur')
+    refposte = models.ForeignKey('Poste', models.DO_NOTHING, db_column='refPoste')
+    refrole = models.ForeignKey('Role', models.DO_NOTHING, db_column='refRole')
+    refequipe = models.ForeignKey('Equipe', models.DO_NOTHING, db_column='refequipe', null=True)  # Ajout de cette ligne
 
     class Meta:
         managed = False

@@ -16,10 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.shortcuts import redirect
 
 from App1 import views
 
 urlpatterns = [
+    path('', lambda request: redirect('creer_compte', permanent=False)),  # Page par défaut
+
     path('admin/', admin.site.urls),
     path('App1/', views.index, name='index'),
     path('liste-joueurs/', views.liste_joueurs, name='liste_joueurs'),

@@ -117,9 +117,40 @@ def index(request):
 
 @login_required
 def liste_joueurs(request):
-    joueurs = Joueur.objects.select_related('refrole', 'refposte')
-    return render(request, 'listeJoueur.html', {'joueurs': joueurs})
+    try:
+        # Récupérer le coach connecté
+        coach = get_object_or_404(Coach, idcoach=request.session['coach_id'])
+        # Récupérer l'équipe du coach
+        equipe = get_object_or_404(Equipe, refcoach=coach)
 
+        # Récupérer les joueurs avec leurs relations et stats
+        joueurs = Joueur.objects.select_related(
+            'refrole',
+            'refposte'
+        ).prefetch_related(
+            'stats_set'  # Pour récupérer les stats associées
+        ).filter(refequipe=equipe)
+
+        # Préparer les données des joueurs avec leurs stats
+        joueurs_data = []
+        for joueur in joueurs:
+            # Récupérer les stats du joueur (s'il en a)
+            try:
+                stats = joueur.stats_set.first()
+            except Stats.DoesNotExist:
+                stats = None
+
+            joueur_info = {
+                'joueur': joueur,
+                'stats': stats
+            }
+            joueurs_data.append(joueur_info)
+
+        return render(request, 'listeJoueur.html', {'joueurs': joueurs_data})
+
+    except Exception as e:
+        messages.error(request, "Une erreur s'est produite lors de la récupération des joueurs.")
+        return redirect('accueil')
 
 @login_required
 def logout_view(request):
@@ -181,6 +212,8 @@ def accueil(request):
 
 
 @login_required
+
+
 def joueur(request):
     if request.method == 'POST':
         prenom = request.POST.get('firstName')
@@ -188,20 +221,30 @@ def joueur(request):
         age = request.POST.get('age')
         poste_id = request.POST.get('position')
 
-        poste = Poste.objects.get(idposte=poste_id)
-        role = Role.objects.get(idrole=1)
+        # Récupérer le poste
+        poste = get_object_or_404(Poste, idposte=poste_id)
 
+        # Récupérer le rôle par défaut (par exemple, ID 1)
+        role = get_object_or_404(Role, idrole=1)
+
+        # Récupérer l'équipe associée à l'utilisateur connecté
+        equipe = get_object_or_404(Equipe, refcoach_id=request.session['coach_id'])
+
+        # Créer le joueur avec la référence à l'équipe
         joueur = Joueur.objects.create(
             prenomjoueur=prenom,
             nomjoueur=nom,
             refposte=poste,
-            refrole=role
+            refrole=role,
+            refequipe=equipe
         )
 
+        # Récupérer les statistiques
         nbmatchs = request.POST.get('matchesPlayed') or 0
         buts = request.POST.get('goals') or 0
         passes = request.POST.get('assists') or 0
 
+        # Créer les statistiques associées au joueur
         if nbmatchs or buts or passes:
             Stats.objects.create(
                 refjoueur=joueur,
@@ -212,29 +255,42 @@ def joueur(request):
 
         return redirect('liste_joueurs')
 
+    # Récupérer tous les postes pour les afficher dans le formulaire
     postes = Poste.objects.all()
+
     return render(request, 'joueur.html', {'postes': postes})
+
 
 
 @login_required
 def tactique(request):
-    joueurs = Joueur.objects.all()
-    roles = Role.objects.all()
+    try:
+        # Récupérer l'équipe du coach connecté
+        coach = get_object_or_404(Coach, idcoach=request.session['coach_id'])
+        equipe = get_object_or_404(Equipe, refcoach=coach)
 
-    joueurs_stats = []
-    for joueur in joueurs:
-        try:
-            joueur_stats = Stats.objects.get(refjoueur=joueur)
-        except Stats.DoesNotExist:
-            joueur_stats = None
-        joueurs_stats.append({
-            'joueur': joueur,
-            'stats': joueur_stats,
-            'full_name': f"{joueur.prenomjoueur} {joueur.nomjoueur}"
-        })
+        # Récupérer uniquement les joueurs de cette équipe
+        joueurs = Joueur.objects.filter(refequipe=equipe)
+        roles = Role.objects.all()
 
-    items = [{'id': role.idrole, 'name': role.nomrole, 'description': role.descriptionrole} for role in roles]
-    return render(request, 'tactique.html', {'joueurs_stats': joueurs_stats, 'items': items})
+        joueurs_stats = []
+        for joueur in joueurs:
+            try:
+                joueur_stats = Stats.objects.get(refjoueur=joueur)
+            except Stats.DoesNotExist:
+                joueur_stats = None
+            joueurs_stats.append({
+                'joueur': joueur,
+                'stats': joueur_stats,
+                'full_name': f"{joueur.prenomjoueur} {joueur.nomjoueur}"
+            })
+
+        items = [{'id': role.idrole, 'name': role.nomrole, 'description': role.descriptionrole} for role in roles]
+        return render(request, 'tactique.html', {'joueurs_stats': joueurs_stats, 'items': items})
+
+    except Exception as e:
+        messages.error(request, "Une erreur s'est produite lors du chargement de la tactique.")
+        return redirect('accueil')
 
 
 @login_required
@@ -250,8 +306,8 @@ def save_tactique(request):
                 'status': 'error',
                 'message': 'Le nom de la tactique est requis.'
             }, status=400)
-
-        equipe = Equipe.objects.first()
+        coach = get_object_or_404(Coach, idcoach=request.session['coach_id'])
+        equipe = get_object_or_404(Equipe, refcoach=coach)
         tactique = Tactique.objects.create(
             nom=nom_tactique,
             refequipe=equipe
@@ -306,7 +362,12 @@ def save_tactique(request):
 @require_http_methods(["GET"])
 def get_tactiques(request):
     try:
-        tactiques = Tactique.objects.all()
+        # Récupérer l'équipe du coach connecté
+        coach = get_object_or_404(Coach, idcoach=request.session['coach_id'])
+        equipe = get_object_or_404(Equipe, refcoach=coach)
+
+        # Récupérer uniquement les tactiques de l'équipe
+        tactiques = Tactique.objects.filter(refequipe=equipe)
         tactiques_data = []
 
         for tactique in tactiques:
@@ -340,15 +401,15 @@ def get_tactiques(request):
 
 @login_required
 def profil_view(request):
-    if hasattr(request, 'session') and 'coach_id' in request.session:
-        coach_id = request.session['coach_id']
-        coach = Coach.objects.get(idcoach=coach_id)
+    try:
+        coach = get_object_or_404(Coach, idcoach=request.session['coach_id'])
+        equipe = get_object_or_404(Equipe, refcoach=coach)
 
-        # Récupérer le nombre de joueurs et de tactiques
-        equipe = Equipe.objects.filter(refcoach=coach).first()
-        nb_joueurs = Joueur.objects.filter(
-            positionjoueur__reftactique__refequipe=equipe).distinct().count() if equipe else 0
-        nb_tactiques = Tactique.objects.filter(refequipe=equipe).count() if equipe else 0
+        # Compter les joueurs de l'équipe
+        nb_joueurs = Joueur.objects.filter(refequipe=equipe).count()
+
+        # Compter les tactiques de l'équipe
+        nb_tactiques = Tactique.objects.filter(refequipe=equipe).count()
 
         context = {
             'coach': coach,
@@ -356,3 +417,7 @@ def profil_view(request):
             'nb_tactiques': nb_tactiques,
         }
         return render(request, 'profil.html', context)
+
+    except Exception as e:
+        messages.error(request, "Une erreur s'est produite lors du chargement du profil.")
+        return redirect('accueil')

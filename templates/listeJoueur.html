@@ -4,8 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sidebar Example</title>
-    <!-- Lien vers le fichier CSS externe -->
+    <title>Liste des Joueurs</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -19,11 +18,12 @@
         </div>
         <nav class="nav">
             <ul>
-                <li><a href="#">Profil</a></li>
-                <li><a href="#" class="logout">Déconnexion</a></li>
+                <li><a href="{% url 'profil' %}">Profil</a></li>
+                <li><a href="{% url 'logout' %}" class="logout">Déconnexion</a></li>
             </ul>
         </nav>
     </header>
+    
     <div id="wrapper">
         <!-- Sidebar -->
         <div id="sidebar-wrapper">
@@ -42,46 +42,48 @@
                 <li><a href="#"><i class="fa fa-server logo"></i> Contact</a></li>
             </ul>
         </div>
-        <!-- /#sidebar-wrapper -->
 
-        <!-- Page Content -->
-        <div id="page-content-wrapper">
-            <div class="container-fluid">
-                <h1></h1>
-                <p>            </div>
+        <div id="liste-wrapper">
+            {% if not joueurs %}
+            <div class="empty-state">
+                <p>Il n'y a pas de joueur dans votre équipe actuellement</p>
+                <a href="{% url 'joueur' %}" class="btn btn-primary">Créez en ici</a>
+            </div>
+            {% else %}
+            <div class="liste-interactive">
+                {% for joueur_info in joueurs %}
+                <div class="liste-item" draggable="true">
+                    <div class="joueur-info">
+                        <span class="joueur-name">{{ joueur_info.joueur.nomjoueur }} {{ joueur_info.joueur.prenomjoueur }}</span>
+                        <span class="fa fa-plus logo-plus"></span>
+                    </div>
+                    <div class="details">
+                        <div class="role-poste">
+                            <p><strong>Poste:</strong> {{ joueur_info.joueur.refposte.nomposte }}</p>
+                            <p><strong>Rôle:</strong> {{ joueur_info.joueur.refrole.nomrole }}</p>
+                        </div>
+                        {% if joueur_info.stats %}
+                        <div class="stats">
+                            <h4>Statistiques</h4>
+                            <p><strong>Matchs joués:</strong> {{ joueur_info.stats.nbmatchs }}</p>
+                            <p><strong>Buts:</strong> {{ joueur_info.stats.buts }}</p>
+                            <p><strong>Passes décisives:</strong> {{ joueur_info.stats.passed }}</p>
+                        </div>
+                        {% else %}
+                        <div class="stats">
+                            <p>Aucune statistique disponible</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
         </div>
-        <!-- /#page-content-wrapper -->
     </div>
 
-    <div id="liste-wrapper">
-        {% if not joueurs %}
-        <div class="empty-state">
-            <p>Il n'y a pas de joueur dans votre équipe actuellement</p>
-            <a href="{% url 'joueur' %}" class="btn btn-primary">Créez en ici</a>
-        </div>
-        {% else %}
-        <div class="liste-interactive">
-            <!-- Boucle Django pour afficher les joueurs -->
-            {% for joueur in joueurs %}
-            <div class="liste-item" draggable="true">
-                <span>{{ joueur.nomjoueur }} {{ joueur.prenomjoueur }}</span> <!-- Nom complet -->
-                <span class="fa fa-plus logo-plus"></span>
-                <div class="details">
-                    <p>Poste : {{ joueur.refposte.nomposte }}</p> <!-- Nom du poste -->
-                    <p>Rôle : {{ joueur.refrole.nomrole }}</p>   <!-- Nom du rôle -->
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-	</div>
     <script src="{% static 'js/listeJoueur.js' %}"></script>
-
-    <!-- /#wrapper -->
-	
-    <!-- jQuery and Bootstrap JS -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-	
 </body>
 </html>
